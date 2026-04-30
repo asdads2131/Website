@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light only" />
+  <title>Prompee - Payment</title>
+  <meta name="description" content="Purchase verified AI prompt bundles from Prompee." />
+  <link href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;600;700;900" rel="stylesheet" />
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      font-size: 18pt;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #1C1C21;
+      color: rgba(255, 255, 255, 0.502);
+      line-height: 1.6;
+      min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Noise texture overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 512 512' width='512' height='512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.875'/%3E%3CfeColorMatrix type='matrix' values='0.046875 0 0 0 0 0 0.046875 0 0 0 0 0 0.05078125 0 0 0 0 0 0.078125 0'/%3E%3C/filter%3E%3Crect filter='url(%23n)' width='512' height='512' fill='transparent' opacity='1'/%3E%3C/svg%3E");
+      background-size: 512px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      max-width: 65rem;
+      margin: 0 auto;
+      padding: 6rem 6rem;
+    }
+
+    /* ---- HERO ---- */
+    .hero {
+      text-align: left;
+      margin-bottom: 5rem;
+      opacity: 0;
+      transform: translateY(1.5rem);
+      animation: fadeUp 1.2s ease forwards;
+    }
+
+    .hero h1 {
+      font-size: 5.5em;
+      font-weight: 500;
+      letter-spacing: -0.25rem;
+      line-height: 1.25;
+      background-image: linear-gradient(170deg, #00A3FF 0%, #14100D 75%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-style: italic;
+    }
+
+    .hero p {
+      margin-top: 1.25rem;
+      font-size: 1.25em;
+      font-weight: 600;
+      line-height: 1.75;
+      max-width: 39rem;
+      color: rgba(255, 255, 255, 0.502);
+    }
+
+    .hero p strong {
+      color: #fff;
+    }
+
+    /* ---- PRICING GRID ---- */
+    .pricing-section {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+    }
+
+    .card {
+      background-color: #1F1F26;
+      border: 1px solid rgba(255, 255, 255, 0.039);
+      padding: 3rem;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transform: translateY(1.5rem);
+      animation: fadeUp 1.2s ease forwards;
+    }
+
+    .card:nth-child(1) {
+      animation-delay: 0.1s;
+    }
+
+    .card:nth-child(2) {
+      animation-delay: 0.25s;
+    }
+
+    .card:nth-child(3) {
+      animation-delay: 0.4s;
+    }
+
+    .card h2 {
+      font-size: 2.2em;
+      font-weight: 500;
+      letter-spacing: -0.08rem;
+      line-height: 1.375;
+      font-style: italic;
+      background-image: linear-gradient(170deg, #26A7F0 0%, #F59A47 75%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 1rem;
+    }
+
+    .card-desc {
+      font-size: 0.85em;
+      line-height: 1.7;
+      color: rgba(255, 255, 255, 0.502);
+      margin-bottom: 1.5rem;
+      flex-grow: 1;
+    }
+
+    /* Price breakdown */
+    .price-block {
+      margin-bottom: 1.5rem;
+      padding: 1rem 0;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8em;
+      padding: 0.25rem 0;
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    .price-row.total {
+      font-size: 1.1em;
+      font-weight: 700;
+      color: #fff;
+      padding-top: 0.5rem;
+      margin-top: 0.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    /* Email input */
+    .email-input {
+      width: 100%;
+      padding: 0.65rem 1rem;
+      border-radius: 0.5rem;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.04);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8em;
+      outline: none;
+      transition: border-color 0.25s ease;
+      margin-bottom: 1rem;
+    }
+
+    .email-input::placeholder {
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    .email-input:focus {
+      border-color: #26A7F0;
+    }
+
+    /* Purchase button */
+    .btn-purchase {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 3.5rem;
+      padding: 0 1.5rem;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.1em;
+      font-weight: 500;
+      color: #fff;
+      background-color: #F59A47;
+      background-image: linear-gradient(104deg, #26A7F0 0%, rgba(245, 154, 71, 0.008) 100%);
+      border: none;
+      border-radius: 2.5rem;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.25s ease, background-color 0.25s ease;
+    }
+
+    .btn-purchase:hover {
+      background-color: #FFB470;
+      transform: scale(1.0425);
+    }
+
+    .btn-purchase svg {
+      width: 1.125em;
+      height: 1.125em;
+      fill: #fff;
+      margin-left: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    /* Error message */
+    .email-error {
+      color: #F59A47;
+      font-size: 0.7em;
+      margin-top: -0.75rem;
+      margin-bottom: 0.75rem;
+      display: none;
+    }
+
+    /* ---- FOOTER ---- */
+    .footer {
+      text-align: center;
+      padding: 4rem 0 2rem;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.6s forwards;
+    }
+
+    .footer-icons {
+      display: flex;
+      justify-content: center;
+      gap: 1.625rem;
+      list-style: none;
+      font-size: 1.375em;
+    }
+
+    .footer-icons a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2em;
+      height: 2em;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      transition: transform 0.25s ease, border-color 0.25s ease;
+      text-decoration: none;
+    }
+
+    .footer-icons a:hover {
+      border-color: rgba(255, 255, 255, 0.071);
+      transform: scale(1.1125);
+    }
+
+    .footer-icons svg {
+      width: 60%;
+      height: 60%;
+      fill: #fff;
+      transition: fill 0.25s ease;
+    }
+
+    .footer-icons a:hover svg {
+      fill: rgba(255, 255, 255, 0.5);
+    }
+
+    .footer-text {
+      margin-top: 1.5rem;
+      font-size: 0.7em;
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* ---- ANIMATION ---- */
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* ---- RESPONSIVE ---- */
+    @media (max-width: 1680px) {
+      html {
+        font-size: 13pt;
+      }
+    }
+
+    @media (max-width: 980px) {
+      html {
+        font-size: 11pt;
+      }
+
+      .pricing-section {
+        grid-template-columns: 1fr;
+        max-width: 32rem;
+        margin: 0 auto;
+      }
+    }
+
+    @media (max-width: 736px) {
+      html {
+        font-size: 11pt;
+      }
+
+      .wrapper {
+        padding: 3.5rem 2rem;
+      }
+
+      .hero h1 {
+        font-size: 2.75em;
+        letter-spacing: -0.175rem;
+      }
+
+      .hero {
+        margin-bottom: 3rem;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .wrapper {
+        padding: 2.625rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrapper">
+
+    <!-- HERO -->
+    <header class="hero">
+      <h1>Prompee</h1>
+      <p>Choose your prompt bundle below. All prices include <strong>19% VAT</strong>. Secure payment powered by
+        RiskPay.</p>
+    </header>
+
+    <!-- PRICING CARDS -->
+    <section class="pricing-section">
+
+      <!-- Card 1: Programmer Bundle -->
+      <div class="card">
+        <h2>Programmer Bundle</h2>
+        <p class="card-desc">Claude Opus 4.6 125$ Api Key + Opus 4.6 JailBreak + Grok JailBreak + GeminiCode Jailbreak.
+          Prompt replacements are FREE after purchase, just contact us through our Email.</p>
+        <div class="price-block">
+          <div class="price-row"><span>Net price</span><span>&euro;25.00</span></div>
+          <div class="price-row"><span>VAT (19%)</span><span>&euro;4.75</span></div>
+          <div class="price-row total"><span>Total</span><span>&euro;29.75</span></div>
+        </div>
+        <input type="email" class="email-input" placeholder="Your email address" data-card="1" />
+        <p class="email-error">Please enter a valid email address.</p>
+        <button class="btn-purchase" onclick="handlePurchase(29.75, this, 'Programmer Bundle')">
+          <span>Purchase</span>
+          <svg viewBox="0 0 40 40">
+            <path
+              d="M34.1,19.9c0,0.3-0.1,0.3-0.1,0.4L21.3,33.1c-0.1,0.1-0.1,0.1-0.4,0.1c-0.3,0-0.3-0.1-0.4-0.1L19,31.6c-0.1-0.1-0.1-0.1-0.1-0.4s0.1-0.3,0.1-0.4l9.2-9.2H5.8c-0.1,0-0.2,0-0.2,0c0,0,0,0,0,0c-0.1-0.1-0.1-0.2-0.1-0.4v-2.5c0-0.2,0.1-0.4,0.1-0.5c0,0,0.1,0,0.2,0h22.4L19,9c-0.1-0.1-0.1-0.1-0.1-0.4c0-0.3,0.1-0.3,0.1-0.4l1.5-1.5c0.1-0.1,0.1-0.1,0.4-0.1c0.3,0,0.3,0.1,0.4,0.1L34,19.5C34,19.6,34.1,19.6,34.1,19.9z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Card 2: Research Bundle -->
+      <div class="card">
+        <h2>Research Bundle</h2>
+        <p class="card-desc">Grok Jailbreak + Deepseek Jailbreak + AntiGravity Jailbreak. Prompt replacements are FREE
+          after purchase, just contact us through our Email.</p>
+        <div class="price-block">
+          <div class="price-row"><span>Net price</span><span>&euro;10.00</span></div>
+          <div class="price-row"><span>VAT (19%)</span><span>&euro;1.90</span></div>
+          <div class="price-row total"><span>Total</span><span>&euro;11.90</span></div>
+        </div>
+        <input type="email" class="email-input" placeholder="Your email address" data-card="2" />
+        <p class="email-error">Please enter a valid email address.</p>
+        <button class="btn-purchase" onclick="handlePurchase(11.90, this, 'Research Bundle')">
+          <span>Purchase</span>
+          <svg viewBox="0 0 40 40">
+            <path
+              d="M34.1,19.9c0,0.3-0.1,0.3-0.1,0.4L21.3,33.1c-0.1,0.1-0.1,0.1-0.4,0.1c-0.3,0-0.3-0.1-0.4-0.1L19,31.6c-0.1-0.1-0.1-0.1-0.1-0.4s0.1-0.3,0.1-0.4l9.2-9.2H5.8c-0.1,0-0.2,0-0.2,0c0,0,0,0,0,0c-0.1-0.1-0.1-0.2-0.1-0.4v-2.5c0-0.2,0.1-0.4,0.1-0.5c0,0,0.1,0,0.2,0h22.4L19,9c-0.1-0.1-0.1-0.1-0.1-0.4c0-0.3,0.1-0.3,0.1-0.4l1.5-1.5c0.1-0.1,0.1-0.1,0.4-0.1c0.3,0,0.3,0.1,0.4,0.1L34,19.5C34,19.6,34.1,19.6,34.1,19.9z" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Card 3: Programmer Bundle Lite -->
+      <div class="card">
+        <h2>Programmer Bundle Lite</h2>
+        <p class="card-desc">Claude Opus 4.6 Jailbreak + Grok Jailbreak + Gemini Code Jailbreak. Prompt replacements are
+          FREE after purchase, just contact us through our Email.</p>
+        <div class="price-block">
+          <div class="price-row"><span>Net price</span><span>&euro;19.00</span></div>
+          <div class="price-row"><span>VAT (19%)</span><span>&euro;3.61</span></div>
+          <div class="price-row total"><span>Total</span><span>&euro;22.61</span></div>
+        </div>
+        <input type="email" class="email-input" placeholder="Your email address" data-card="3" />
+        <p class="email-error">Please enter a valid email address.</p>
+        <button class="btn-purchase" onclick="handlePurchase(22.61, this, 'Programmer Bundle Lite')">
+          <span>Purchase</span>
+          <svg viewBox="0 0 40 40">
+            <path
+              d="M34.1,19.9c0,0.3-0.1,0.3-0.1,0.4L21.3,33.1c-0.1,0.1-0.1,0.1-0.4,0.1c-0.3,0-0.3-0.1-0.4-0.1L19,31.6c-0.1-0.1-0.1-0.1-0.1-0.4s0.1-0.3,0.1-0.4l9.2-9.2H5.8c-0.1,0-0.2,0-0.2,0c0,0,0,0,0,0c-0.1-0.1-0.1-0.2-0.1-0.4v-2.5c0-0.2,0.1-0.4,0.1-0.5c0,0,0.1,0,0.2,0h22.4L19,9c-0.1-0.1-0.1-0.1-0.1-0.4c0-0.3,0.1-0.3,0.1-0.4l1.5-1.5c0.1-0.1,0.1-0.1,0.4-0.1c0.3,0,0.3,0.1,0.4,0.1L34,19.5C34,19.6,34.1,19.6,34.1,19.9z" />
+          </svg>
+        </button>
+      </div>
+
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <ul class="footer-icons">
+        <li><a href="mailto:prompee@tutamail.com" aria-label="Email"><svg viewBox="0 0 40 40">
+              <path
+                d="M37.5,12.6l-17.5,11.9L2.5,12.6c-.2-.1-.3-.2-.5-.2v-2.7c0-.8.6-1.4,1.4-1.4h33.1c.8,0,1.4.6,1.4,1.4v2.7c-.2,0-.4,0-.5.2ZM19.5,26.3c.2.1.3.2.5.2s.4,0,.5-.2l17.5-11.9v16.9c0,.8-.6,1.4-1.4,1.4H3.4c-.8,0-1.4-.6-1.4-1.4V14.4l17.5,11.9Z" />
+            </svg></a></li>
+        <li><a href="https://t.me/Prompeez" aria-label="Telegram" target="_blank" rel="noopener"><svg
+              viewBox="0 0 40 40">
+              <path
+                d="M2.3,18.6c9.1-4,15.2-6.6,18.2-7.9c8.7-3.6,10.5-4.2,11.7-4.3c0.3,0,0.8,0.1,1.2,0.4c0.3,0.3,0.4,0.6,0.4,0.9C34,7.9,34,8.4,34,8.9c-0.5,5-2.5,17-3.5,22.5c-0.4,2.3-1.3,3.1-2.1,3.2c-1.8,0.2-3.2-1.2-5-2.3c-2.8-1.8-4.3-2.9-7-4.7c-3.1-2-1.1-3.2,0.7-5c0.5-0.5,8.5-7.8,8.6-8.4c0-0.1,0-0.4-0.2-0.5c-0.2-0.2-0.4-0.1-0.7-0.1c-0.3,0.1-4.7,3-13.2,8.7c-1.3,0.9-2.4,1.3-3.4,1.3c-1.1,0-3.3-0.6-4.9-1.1c-2-0.6-3.5-1-3.4-2.1C0.1,19.7,0.9,19.2,2.3,18.6z" />
+            </svg></a></li>
+      </ul>
+      <p class="footer-text">&copy; 2026 Prompee. All rights reserved.</p>
+    </footer>
+
+  </div>
+
+  <script>
+    // ═══════════════════════════════════════════
+    //  CONFIG — Edit these values
+    // ═══════════════════════════════════════════
+    const CONFIG = {
+      walletAddress: '0x72001bcb1f4758f60f43d5f7a0ad5bea4313bc3f',
+      promoCode: '',
+      currency: 'EUR',
+      checkoutUrl: 'https://checkout.riskpay.biz/pay.php',
+    };
+
+    function handlePurchase(amount, btn, productName) {
+      const card = btn.closest('.card');
+      const emailInput = card.querySelector('.email-input');
+      const errorMsg = card.querySelector('.email-error');
+      const email = emailInput.value.trim();
+
+      // Validate email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        errorMsg.style.display = 'block';
+        emailInput.style.borderColor = '#F59A47';
+        emailInput.focus();
+        return;
+      }
+
+      errorMsg.style.display = 'none';
+      emailInput.style.borderColor = 'rgba(255,255,255,0.1)';
+
+      // Redirect directly to RiskPay checkout
+      const params = new URLSearchParams({
+        address: CONFIG.walletAddress,
+        amount: amount.toFixed(2),
+        email: email,
+        currency: CONFIG.currency,
+      });
+
+      if (CONFIG.promoCode) {
+        params.set('promo', CONFIG.promoCode);
+      }
+
+      window.location.href = CONFIG.checkoutUrl + '?' + params.toString();
+    }
+
+    // Clear error on input
+    document.querySelectorAll('.email-input').forEach(input => {
+      input.addEventListener('input', () => {
+        const card = input.closest('.card');
+        card.querySelector('.email-error').style.display = 'none';
+        input.style.borderColor = 'rgba(255,255,255,0.1)';
+      });
+
+      // Allow Enter key to trigger purchase
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          const btn = input.closest('.card').querySelector('.btn-purchase');
+          btn.click();
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
