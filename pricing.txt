@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="light only" />
+  <title>Prompee - Payment</title>
+  <meta name="description" content="Purchase verified AI prompt bundles from Prompee." />
+  <link href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;600;700;900" rel="stylesheet" />
+</head>
+
+<body>
+  <div class="wrapper">
+
+<header class="hero">
+  <h1>Prompee</h1>
+  <p>Choose your prompt bundle below.</p>
+</header>
+
+<section class="pricing-section">
+
+  <div class="card">
+    <h2>Programmer Bundle</h2>
+    <input type="email" class="email-input" placeholder="Your email address" />
+    <p class="email-error">Please enter a valid email address.</p>
+    <button class="btn-purchase" onclick="handlePurchase(29.75, this, 'Programmer Bundle')">
+      Purchase
+    </button>
+  </div>
+
+  <div class="card">
+    <h2>Research Bundle</h2>
+    <input type="email" class="email-input" placeholder="Your email address" />
+    <p class="email-error">Please enter a valid email address.</p>
+    <button class="btn-purchase" onclick="handlePurchase(11.90, this, 'Research Bundle')">
+      Purchase
+    </button>
+  </div>
+
+  <div class="card">
+    <h2>Programmer Bundle Lite</h2>
+    <input type="email" class="email-input" placeholder="Your email address" />
+    <p class="email-error">Please enter a valid email address.</p>
+    <button class="btn-purchase" onclick="handlePurchase(22.61, this, 'Programmer Bundle Lite')">
+      Purchase
+    </button>
+  </div>
+
+</section>
+
+  </div>
+
+  <script>
+    const CONFIG = {
+      walletAddress: '0x72001bcb1f4758f60f43d5f7a0ad5bea4313bc3f',
+      currency: 'EUR',
+      checkoutUrl: 'https://checkout.riskpay.biz/pay.php',
+    };
+
+    async function handlePurchase(amount, btn, productName) {
+      const card = btn.closest('.card');
+      const emailInput = card.querySelector('.email-input');
+      const errorMsg = card.querySelector('.email-error');
+      const email = emailInput.value.trim();
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!email || !emailRegex.test(email)) {
+        errorMsg.style.display = 'block';
+        emailInput.style.borderColor = 'red';
+        return;
+      }
+
+      errorMsg.style.display = 'none';
+
+      try {
+        const res = await fetch("https://backend2-production-2dbb.up.railway.app/api/emails", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: email,
+            product: productName,
+            amount: amount
+          })
+        });
+
+        const data = await res.json();
+
+        if (!data.success) {
+          alert("Server error");
+          return;
+        }
+
+        const params = new URLSearchParams({
+          address: CONFIG.walletAddress,
+          amount: amount.toFixed(2),
+          email: email,
+          currency: CONFIG.currency,
+        });
+
+        window.location.href = CONFIG.checkoutUrl + '?' + params.toString();
+
+      } catch (err) {
+        alert("Network error. Try again.");
+      }
+    }
+  </script>
+
+</body>
+
+</html>
