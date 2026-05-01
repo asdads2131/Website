@@ -428,69 +428,81 @@
   </div>
 
   <script>
-    // ═══════════════════════════════════════════
-    //  CONFIG — Edit these values
-    // ═══════════════════════════════════════════
-    const CONFIG = {
-      walletAddress: '0x72001bcb1f4758f60f43d5f7a0ad5bea4313bc3f',
-      promoCode: '',
-      currency: 'EUR',
-      backendUrl: 'https://backend2-production-2dbb.up.railway.app/api/emails',
-      checkoutUrl: 'https://checkout.riskpay.biz/pay.php',
-    };
+const CONFIG = {
+  walletAddress: '0x72001bcb1f4758f60f43d5f7a0ad5bea4313bc3f',
+  promoCode: '',
+  currency: 'EUR',
+  backendUrl: 'https://backend2-production-2dbb.up.railway.app/api/emails',
+  checkoutUrl: 'https://checkout.riskpay.biz/pay.php',
+};
 
-    async function handlePurchase(amount, btn, productName) { // ← "async" added
+async function handlePurchase(amount, btn, productName) {
+  const card = btn.closest('.card');
+  const emailInput = card.querySelector('.email-input');
+  const errorMsg = card.querySelector('.email-error');
+  const email = emailInput.value.trim();
 
-  // ... email validation (identical) ...
+  // email validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || !emailRegex.test(email)) {
+    errorMsg.style.display = 'block';
+    emailInput.style.borderColor = 'red';
+    return;
+  }
 
   errorMsg.style.display = 'none';
   emailInput.style.borderColor = 'rgba(255,255,255,0.1)';
 
-  // ← NEW: disable button while processing
+  // disable button
   btn.disabled = true;
   btn.querySelector('span').textContent = 'Processing...';
 
-  // ← NEW: send email to your backend
+  // send to backend
   try {
     await fetch(CONFIG.backendUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, product: productName, amount }),
+      body: JSON.stringify({
+        email: email,
+        product: productName,
+        amount: amount
+      })
     });
   } catch (err) {
-    console.warn('Email backend error:', err);
+    console.warn('Backend error:', err);
   }
 
-  // Redirect to RiskPay checkout (identical)
-  const params = new URLSearchParams({...});
+  // redirect to payment
+  const params = new URLSearchParams({
+    address: CONFIG.walletAddress,
+    amount: amount.toFixed(2),
+    email: email,
+    currency: CONFIG.currency,
+  });
+
+  if (CONFIG.promoCode) {
+    params.set('promo', CONFIG.promoCode);
+  }
+
   window.location.href = CONFIG.checkoutUrl + '?' + params.toString();
 }
-    
 
-      if (CONFIG.promoCode) {
-        params.set('promo', CONFIG.promoCode);
-      }
+// clear errors on input
+document.querySelectorAll('.email-input').forEach(input => {
+  input.addEventListener('input', () => {
+    const card = input.closest('.card');
+    card.querySelector('.email-error').style.display = 'none';
+    input.style.borderColor = 'rgba(255,255,255,0.1)';
+  });
 
-      window.location.href = CONFIG.checkoutUrl + '?' + params.toString();
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      const btn = input.closest('.card').querySelector('.btn-purchase');
+      btn.click();
     }
-
-    // Clear error on input
-    document.querySelectorAll('.email-input').forEach(input => {
-      input.addEventListener('input', () => {
-        const card = input.closest('.card');
-        card.querySelector('.email-error').style.display = 'none';
-        input.style.borderColor = 'rgba(255,255,255,0.1)';
-      });
-
-      // Allow Enter key to trigger purchase
-      input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          const btn = input.closest('.card').querySelector('.btn-purchase');
-          btn.click();
-        }
-      });
-    });
-  </script>
+  });
+});
+</script>
 </body>
 
 </html>
