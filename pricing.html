@@ -435,14 +435,13 @@ const CONFIG = {
   backendUrl: 'https://backend2-production-2dbb.up.railway.app/api/emails',
   checkoutUrl: 'https://checkout.riskpay.biz/pay.php',
 };
-
 async function handlePurchase(amount, btn, productName) {
   const card = btn.closest('.card');
   const emailInput = card.querySelector('.email-input');
   const errorMsg = card.querySelector('.email-error');
   const email = emailInput.value.trim();
 
-  // ✅ email validation
+  // validation
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!email || !emailRegex.test(email)) {
     errorMsg.style.display = 'block';
@@ -486,7 +485,6 @@ async function handlePurchase(amount, btn, productName) {
 
   window.location.href = CONFIG.checkoutUrl + '?' + params.toString();
 }
-
 // input listeners
 document.querySelectorAll('.email-input').forEach(input => {
   input.addEventListener('input', () => {
