@@ -482,12 +482,13 @@ if (!res.ok || !data.success) {
   btn.querySelector('span').textContent = 'Purchase';
   return;
 }
-
+  btn.disabled = false;
+btn.querySelector('span').textContent = 'Purchase';
   // redirect
  const links = {
-  "programmer bundle": "LINK_1",
-  "research bundle": "LINK_2",
-  "programmer bundle lite": "LINK_3"
+  "programmer bundle": "https://checkout.riskpay.biz/process-payment.php?address=wNSkcE%2BwmBWSTyqZrErP1lkl0X2hSXBjfcF6dG%2FTwSAmxr3G3uqkFE0U5Us%2FIm31%2BEAUxKJz0TciYoKd0NLP5w%3D%3D&amount=29.75&provider=moonpay&email=test%40test.com&currency=EUR",
+  "research bundle": "https://checkout.riskpay.biz/process-payment.php?address=GKu%2Bj0Uybmx%2F4ktG%2BzYA0ozA7ondyco%2BkBVZOdxZQqTrMEkjmj8ygqv0F0jCbanKLQieKffm2GthN%2F%2FSIAPZIQ%3D%3D&amount=11.9&provider=gateway&email=test%40test.com&currency=EUR",
+  "programmer bundle lite": "https://checkout.riskpay.biz/process-payment.php?address=4oVBjFkkSjVA4CecfhPIqBE14Et%2FbizXMQHWFAmiZ5Q1MAuA8m02MGFyzhoJxywEAmt1%2B7E%2B%2FwQ%2F0%2FdxkXDMlA%3D%3D&amount=22.61&provider=moonpay&email=test%40test.com&currency=EUR"
 };
 
 const key = productName.toLowerCase().trim();
