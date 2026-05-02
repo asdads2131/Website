@@ -458,18 +458,30 @@ async function handlePurchase(amount, btn, productName) {
 
   // send to backend
   try {
-    await fetch(CONFIG.backendUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        email: email,
-        product: productName,
-        amount: amount
-      })
-    });
+    const res = await fetch(CONFIG.backendUrl, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: email,
+    product: productName,
+    amount: amount
+  })
+});
+
+const data = await res.json();
+
+if (!res.ok || !data.success) {
+  console.error("Failed to save email:", data);
+  btn.disabled = false;
+  btn.querySelector('span').textContent = 'Purchase';
+  return;
+}
   } catch (err) {
-    console.warn('Backend error:', err);
-  }
+  console.error('Backend error:', err);
+  btn.disabled = false;
+  btn.querySelector('span').textContent = 'Purchase';
+  return;
+}
 
   // redirect
   const params = new URLSearchParams({
