@@ -433,8 +433,8 @@ const CONFIG = {
   promoCode: '',
   currency: 'EUR',
   backendUrl: 'https://backend2-production-2dbb.up.railway.app/api/emails',
-  checkoutUrl: 'https://checkout.riskpay.biz/pay.php',
 };
+    
 async function handlePurchase(amount, btn, productName) {
   const card = btn.closest('.card');
   const emailInput = card.querySelector('.email-input');
@@ -484,18 +484,22 @@ if (!res.ok || !data.success) {
 }
 
   // redirect
-  const params = new URLSearchParams({
-    address: CONFIG.walletAddress,
-    amount: amount.toFixed(2),
-    email: email,
-    currency: CONFIG.currency,
-  });
+ const links = {
+  "programmer bundle": "LINK_1",
+  "research bundle": "LINK_2",
+  "programmer bundle lite": "LINK_3"
+};
 
-  if (CONFIG.promoCode) {
-    params.set('promo', CONFIG.promoCode);
-  }
+const key = productName.toLowerCase().trim();
 
-  window.location.href = CONFIG.checkoutUrl + '?' + params.toString();
+if (!links[key]) {
+  console.error("No payment link for product:", productName);
+  btn.disabled = false;
+  btn.querySelector('span').textContent = 'Purchase';
+  return;
+}
+
+window.location.href = links[key];
 }
 // input listeners
 document.querySelectorAll('.email-input').forEach(input => {
